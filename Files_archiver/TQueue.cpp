@@ -36,7 +36,7 @@ fs::path ThreadQueue::pop()
     {
         // Оповещение всех обработчиков для корректного завершения работы
         cv.notify_all();
-        throw runtime_error("Очередь закрыта!");
+        return "";
     }
 
     fs::path file = files.front();
@@ -54,12 +54,4 @@ void ThreadQueue::close()
 
     // Оповещение всех ожидающих обработчиков для завершения работы
     cv.notify_all();
-}
-
-int ThreadQueue::size()
-{
-    {
-        lock_guard<mutex> lock(mtx);
-        return files.size();
-    }
 }

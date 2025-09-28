@@ -15,6 +15,7 @@ int main()
 	ThreadQueue filesQueue;
 	unsigned int numCores;
 	unsigned int numThreads;
+	vector<thread> handlerThreads;
 
 	cout << "Укажите директорию: ";
 	getline(cin, strDir);
@@ -35,9 +36,21 @@ int main()
 	// Запуск потока для обхода директории
 	thread collThread(CollectorTask, ref(pathDir), ref(filesQueue));
 
+	// Запуск потоков для обработки
+	for (unsigned int i = 0; i < numThreads; ++i) {
+		handlerThreads.emplace_back(HandlerTask, ref(filesQueue));
+	}
+
 	// Ожидание завершения потока
 	if (collThread.joinable()) {
 		collThread.join();
+	}
+
+	// Завершение потоков обработчиков
+	for (auto& handler : handlerThreads) {
+		if (handler.joinable()) {
+			handler.join();
+		}
 	}
 
 	system("pause");
