@@ -7,4 +7,8 @@
 #include "ProcessingaData.h"
 #include <vector>
 
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
+
 // TODO: установите здесь ссылки на дополнительные заголовки, требующиеся для программы.

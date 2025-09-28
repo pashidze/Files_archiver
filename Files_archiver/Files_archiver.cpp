@@ -8,12 +8,31 @@ namespace fs = filesystem;
 
 const string OUTPUT_DIR = "Zip files";
 
-int main()
+//Перевод получаемого из консоли параметра в UTF-8 для корректной работы с кириллицей
+vector<string> get_utf8_argv() {
+	vector<string> args;
+#ifdef _WIN32
+	int argcW = 0;
+	LPWSTR* argvW = CommandLineToArgvW(GetCommandLineW(), &argcW);
+	if (!argvW) return args;
+	for (int i = 0; i < argcW; ++i) {
+		int len = WideCharToMultiByte(CP_UTF8, 0, argvW[i], -1, nullptr, 0, nullptr, nullptr);
+		string utf8(len - 1, '\0');
+		WideCharToMultiByte(CP_UTF8, 0, argvW[i], -1, utf8.data(), len - 1, nullptr, nullptr);
+		args.push_back(move(utf8));
+	}
+	LocalFree(argvW);
+#endif
+	return args;
+}
+
+int main(int argc, char* argv[])
 {
 #ifdef _WIN32
 	setlocale(LC_ALL, "rus");
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
+	vector<string> args = get_utf8_argv();
 #endif
 
 	string strDir;
@@ -23,10 +42,26 @@ int main()
 	unsigned int numThreads;
 	vector<thread> handlerThreads;
 
-	cout << "Укажите директорию: ";
-	getline(cin, strDir);
-
-	pathDir = fs::u8path(strDir);
+	// Если нет параметра, то предлагается ввод, в противном случае считывается из параметра
+	if (argc < 2) {
+		cout << "Укажите директорию: ";
+		getline(cin, strDir);
+#ifdef _WIN32
+		pathDir = fs::u8path(strDir);
+#else
+		pathDir = fs::path(strDir);
+#endif
+	}
+	else
+	{
+#ifdef _WIN32
+		strDir = args[1];
+		pathDir = fs::u8path(strDir);
+#else
+		strDir = argv[1];
+		pathDir = fs::path(strDir);
+#endif
+	}
 	
 	if (!fs::exists(pathDir))
 	{
