@@ -4,9 +4,12 @@
 #include "Files_archiver.h"
 
 using namespace std;
+namespace fs = filesystem;
 
 int main()
 {
-	cout << "Hello CMake." << endl;
+	
+
+
 	return 0;
 }
