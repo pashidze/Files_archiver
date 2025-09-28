@@ -6,6 +6,34 @@ namespace fs = filesystem;
 mutex globMtx;
 extern const string OUTPUT_DIR;
 
+//Перевод строк в UTF-8 для корректной работы с кириллицей
+#ifdef _WIN32
+static string utf16_to_utf8(const wstring& wPath)
+{
+    if (wPath.empty())
+    {
+        return {};
+    }
+    int size = ::WideCharToMultiByte(CP_UTF8, 0, wPath.data(), (int)wPath.size(), nullptr, 0, nullptr, nullptr);
+    if (size == 0) return {};
+    string out(size, '\0');
+    ::WideCharToMultiByte(CP_UTF8, 0, wPath.data(), (int)wPath.size(), &out[0], size, nullptr, nullptr);
+    return out;
+}
+
+static string path_to_utf8(const fs::path& p)
+{
+    return utf16_to_utf8(p.wstring());
+}
+
+#else
+
+static string path_to_utf8(const fs::path& p)
+{
+    return p.string();
+}
+#endif
+
 void CollectorTask(const fs::path& pathDir, ThreadQueue& files)
 {
     int count = 0;
@@ -53,11 +81,12 @@ void ZipFile(const fs::path& pathFile)
 
     // Формирование имени ZIP-файла
     fs::path zipPath = fs::path(OUTPUT_DIR) / (dirPath.filename().string() + ".zip");
-    string zipFileName = zipPath.string();
+    string zipFileName = path_to_utf8(zipPath.string());
+    string outFileName = zipPath.string();
 
     {
         lock_guard<mutex> lock(globMtx);
-        cout << "Обработчик [" << this_thread::get_id() << "] сжимает файл " << pathFile << " в \"" << zipFileName << "\"\n";
+        cout << "Обработчик [" << this_thread::get_id() << "] сжимает файл " << pathFile << " в \"" << outFileName << "\"\n";
     }
 
     int err;
@@ -68,18 +97,18 @@ void ZipFile(const fs::path& pathFile)
         lock_guard<mutex> lock(globMtx);
         if (fs::exists(zipPath))
         {
-            cerr << "Файл " << zipFileName << " уже существует!\n";
+            cerr << "Файл " << outFileName << " уже существует!\n";
             return;
         }
         zip_error_t ziperr;
         zip_error_init_with_code(&ziperr, err);
-        cerr << "Ошибка открытия zip-архива " << zip_error_strerror(&ziperr) << " для файла: " << zipFileName << "\n";
+        cerr << "Ошибка открытия zip-архива " << zip_error_strerror(&ziperr) << " для файла: " << outFileName << "\n";
         zip_error_fini(&ziperr);
         return;
     }
 
     // Создание источника данных из файла
-    string tempPath = pathFile.string();
+    string tempPath = path_to_utf8(pathFile.string());
     zip_source_t* source = zip_source_file(zip, tempPath.c_str(), 0, 0);
     if (source == nullptr) {
         lock_guard<mutex> lock(globMtx);
@@ -89,7 +118,7 @@ void ZipFile(const fs::path& pathFile)
     }
 
     // Добавление файла в архив
-    const string fileName = dirPath.filename().string();
+    const string fileName = path_to_utf8(dirPath.filename().string());
     zip_int64_t fileIdx = zip_file_add(zip, fileName.c_str(), source, ZIP_FL_ENC_UTF_8);
 
     if (fileIdx < 0) {
@@ -105,6 +134,6 @@ void ZipFile(const fs::path& pathFile)
     // Закрытие архива
     if (zip_close(zip) < 0) {
         lock_guard<mutex> lock(globMtx);
-        cerr << "Ошибка чтения/записи архива " << zipFileName << ": " << zip_strerror(zip) << "\n";
+        cerr << "Ошибка чтения/записи архива " << outFileName << ": " << zip_strerror(zip) << "\n";
     }
 }

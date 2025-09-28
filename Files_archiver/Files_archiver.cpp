@@ -11,6 +11,8 @@ const string OUTPUT_DIR = "Zip files";
 int main()
 {
 	setlocale(LC_ALL, "rus");
+	SetConsoleCP(CP_UTF8);
+	SetConsoleOutputCP(CP_UTF8);
 
 	string strDir;
 	fs::path pathDir;
