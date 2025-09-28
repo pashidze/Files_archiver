@@ -1,9 +1,12 @@
 ﻿#pragma once
 
 #include "TQueue.h"
+#include <zip.h>
 
 using namespace std;
 namespace fs = filesystem;
+
+extern const string OUTPUT_DIR;
 
 // Функция для обхода директории и формирования очереди
 void CollectorTask(const fs::path& pathDir, ThreadQueue& files);

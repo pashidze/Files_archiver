@@ -6,6 +6,8 @@
 using namespace std;
 namespace fs = filesystem;
 
+const string OUTPUT_DIR = "Zip files";
+
 int main()
 {
 	setlocale(LC_ALL, "rus");
@@ -25,6 +27,19 @@ int main()
 	if (!fs::exists(pathDir))
 	{
 		cerr << "Указанная директория " << pathDir << " не найдена!\n";
+		return 0;
+	}
+
+	try 
+	{
+		if (!fs::exists(OUTPUT_DIR)) 
+		{
+			fs::create_directory(OUTPUT_DIR);
+		}
+	}
+	catch (const fs::filesystem_error& e) 
+	{
+		cerr << "Ошибка при создании директории zip файлов: " << e.what() << "\n";
 		return 0;
 	}
 
