@@ -5,6 +5,6 @@
 
 #include "TQueue.h"
 #include "ProcessingaData.h"
-#include <iostream>
+#include <vector>
 
 // TODO: установите здесь ссылки на дополнительные заголовки, требующиеся для программы.

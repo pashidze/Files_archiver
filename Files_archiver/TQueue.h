@@ -7,7 +7,10 @@
 #include <condition_variable>
 #include <iostream>
 #include <filesystem>
+
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 using namespace std;
 namespace fs = filesystem;

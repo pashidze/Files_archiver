@@ -10,9 +10,11 @@ const string OUTPUT_DIR = "Zip files";
 
 int main()
 {
+#ifdef _WIN32
 	setlocale(LC_ALL, "rus");
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
+#endif
 
 	string strDir;
 	fs::path pathDir;
@@ -70,6 +72,8 @@ int main()
 		}
 	}
 
+#ifdef _WIN32
 	system("pause");
+#endif
 	return 0;
 }
