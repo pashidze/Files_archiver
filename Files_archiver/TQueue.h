@@ -25,4 +25,6 @@ public:
     fs::path pop();
 
     void close();
+
+    int size();
 };
